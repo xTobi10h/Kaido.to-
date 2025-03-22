@@ -1,61 +1,87 @@
-/**
- * Kaido.to module for Sora
- */
-
-const BASE_URL = "https://kaido.to";
-
-// Search for anime titles
-async function searchAnime(query) {
-    const searchUrl = `${BASE_URL}/search?keyword=${encodeURIComponent(query)}`;
-    const response = await fetch(searchUrl);
-    const html = await response.text();
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, "text/html");
-
-    let results = [];
-    doc.querySelectorAll(".film_list-wrap .flw-item").forEach(item => {
-        const titleTag = item.querySelector(".film-name a");
-        const imgTag = item.querySelector(".film-poster img");
-        if (titleTag && imgTag) {
-            results.push({
-                title: titleTag.textContent.trim(),
-                url: BASE_URL + titleTag.getAttribute("href"),
-                image: imgTag.getAttribute("data-src")
-            });
-        }
-    });
-
-    return results;
+async function searchResults(keyword) {
+    try {
+        const encodedKeyword = encodeURIComponent(keyword);
+        const response = await fetch(`https://kaido.to/api/search?q=${encodedKeyword}`);
+        const data = await response.json();
+        
+        const transformedResults = data.results.map(anime => ({
+            title: anime.title,
+            image: anime.image,
+            href: `https://kaido.to/anime/${anime.id}`
+        }));
+        
+        return JSON.stringify(transformedResults);
+        
+    } catch (error) {
+        console.log('Fetch error:', error);
+        return JSON.stringify([{ title: 'Error', image: '', href: '' }]);
+    }
 }
 
-// Get episode list from an anime page
-async function getEpisodeList(animeUrl) {
-    const response = await fetch(animeUrl);
-    const html = await response.text();
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, "text/html");
-
-    let episodes = [];
-    doc.querySelectorAll(".episodes li a").forEach(a => {
-        episodes.push({
-            title: a.textContent.trim(),
-            url: BASE_URL + a.getAttribute("href")
-        });
-    });
-
-    return episodes.reverse(); // Sort episodes correctly
+async function extractDetails(url) {
+    try {
+        const match = url.match(/https:\/\/kaido\.to\/anime\/(.+)$/);
+        if (!match) throw new Error('Invalid URL format');
+        
+        const animeId = match[1];
+        const response = await fetch(`https://kaido.to/api/anime/${animeId}`);
+        const data = await response.json();
+        
+        const animeInfo = data.anime;
+        
+        const transformedResults = [{
+            description: animeInfo.description || 'No description available',
+            aliases: `Duration: ${animeInfo.duration || 'Unknown'}`,
+            airdate: `Aired: ${animeInfo.aired || 'Unknown'}`
+        }];
+        
+        return JSON.stringify(transformedResults);
+    } catch (error) {
+        console.log('Details error:', error);
+        return JSON.stringify([{
+            description: 'Error loading description',
+            aliases: 'Duration: Unknown',
+            airdate: 'Aired: Unknown'
+        }]);
+    }
 }
 
-// Get streaming URL from an episode page
-async function getVideoUrl(episodeUrl) {
-    const response = await fetch(episodeUrl);
-    const html = await response.text();
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, "text/html");
+async function extractEpisodes(url) {
+    try {
+        const match = url.match(/https:\/\/kaido\.to\/anime\/(.+)$/);
+        if (!match) throw new Error('Invalid URL format');
+        
+        const animeId = match[1];
+        const response = await fetch(`https://kaido.to/api/anime/${animeId}/episodes`);
+        const data = await response.json();
 
-    const iframe = doc.querySelector("iframe");
-    return iframe ? iframe.src : null;
+        const transformedResults = data.episodes.map(episode => ({
+            href: `https://kaido.to/watch/${episode.id}`,
+            number: episode.number
+        }));
+        
+        return JSON.stringify(transformedResults);
+        
+    } catch (error) {
+        console.log('Fetch error:', error);
+        return JSON.stringify([]);
+    }
 }
 
-// Export functions
-export { searchAnime, getEpisodeList, getVideoUrl };
+async function extractStreamUrl(url) {
+    try {
+        const match = url.match(/https:\/\/kaido\.to\/watch\/(.+)$/);
+        if (!match) throw new Error('Invalid URL format');
+        
+        const episodeId = match[1];
+        const response = await fetch(`https://kaido.to/api/episode/${episodeId}/sources`);
+        const data = await response.json();
+        
+        const hlsSource = data.sources.find(source => source.type === 'hls');
+        
+        return hlsSource ? hlsSource.url : null;
+    } catch (error) {
+        console.log('Fetch error:', error);
+        return null;
+    }
+}
