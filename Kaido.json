@@ -5,12 +5,12 @@
         "name": "xTobi10h",
         "icon": "https://avatars.githubusercontent.com/u/00000000"
     },
-    "version": "1.0.1",
+    "version": "1.0.0",
     "language": "English",
     "streamType": "HLS",
     "quality": "1080p",
-    "baseUrl": "https://kaido.to",
+    "baseUrl": "https://megacloud.club/",
     "searchBaseUrl": "https://kaido.to/search?q=%s",
-    "scriptUrl": "https://raw.githubusercontent.com/xTobi10h/Kaido.to-/main/Kaido.js",
+    "scriptUrl": "https://raw.githubusercontent.com/xTobi10h/Kaido-module/main/kaido.js",
     "asyncJS": true
 }
