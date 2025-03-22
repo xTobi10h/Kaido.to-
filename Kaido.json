@@ -3,7 +3,7 @@
     "iconUrl": "https://kaido.to/favicon.ico",
     "author": {
         "name": "xTobi10h",
-        "icon": "https://avatars.githubusercontent.com/u/00000000" 
+        "icon": "https://avatars.githubusercontent.com/u/168661157"
     },
     "version": "1.0.0",
     "language": "English",
@@ -11,6 +11,6 @@
     "quality": "1080p",
     "baseUrl": "https://kaido.to",
     "searchBaseUrl": "https://kaido.to/search?keyword=%s",
-    "scriptUrl": "https://raw.githubusercontent.com/xTobi10h/Kaido-anime-module/main/kaido.js",
+    "scriptUrl": "https://raw.githubusercontent.com/xTobi10h/Kaido.to-/main/Kaido.js",
     "asyncJS": true
 }
