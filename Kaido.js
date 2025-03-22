@@ -2,20 +2,22 @@
  * Kaido.to Sora Module (Regex-based) *
  **************************************/
 
-/**
- * Fetches the search results page from Kaido.to using ?keyword=,
- * parses the HTML with regex, and returns an array of anime objects.
- */
+/* ================================
+   1) SEARCH LOGIC
+   ================================ */
 async function searchAnime(query) {
     try {
         const encoded = encodeURIComponent(query);
-        // Potential search URL; may or may not return actual results
+        // Potential search endpoint
         const url = `https://kaido.to/search?keyword=${encoded}`;
 
+        // Fetch the page
         const response = await fetch(url);
         const html = await response.text();
 
-        return searchResults(html);
+        // Call your existing regex parser
+        const results = searchResults(html);
+        return results;
     } catch (error) {
         console.error("searchAnime error:", error);
         return [];
@@ -23,8 +25,7 @@ async function searchAnime(query) {
 }
 
 /**
- * Regex-based parsing for the search page HTML.
- * Looks for flw-item blocks, extracting { title, image, href }.
+ * Regex-based parsing for search results HTML
  */
 function searchResults(html) {
     const results = [];
@@ -43,7 +44,7 @@ function searchResults(html) {
             results.push({
                 title: title.trim(),
                 image: imageUrl.trim(),
-                href: href.trim()
+                href: href.trim(),
             });
         }
     });
@@ -52,10 +53,9 @@ function searchResults(html) {
     return results;
 }
 
-/**
- * Fetches the anime detail page, parses the HTML, and returns
- * { description, alias, airdate }.
- */
+/* ================================
+   2) DETAILS LOGIC
+   ================================ */
 async function getAnimeDetails(url) {
     try {
         const response = await fetch(url);
@@ -65,41 +65,40 @@ async function getAnimeDetails(url) {
         console.error("getAnimeDetails error:", error);
         return {
             description: "Error",
-            alias: "Unknown",
+            alias: "Episodes: N/A",
             airdate: "Unknown"
         };
     }
 }
 
 /**
- * Regex-based parsing for the anime's detail page.
+ * Regex-based parsing for the anime detail page
  */
 function extractDetails(html) {
     const details = [];
 
     const descriptionMatch = html.match(/<div class="film-description">(.*?)<\/div>/s);
-    const description = descriptionMatch ? descriptionMatch[1].trim() : 'N/A';
+    let description = descriptionMatch ? descriptionMatch[1].trim() : 'N/A';
 
     const airdateMatch = html.match(/<span>Released:\s*<\/span>\s*([^<]+)/);
-    const airdate = airdateMatch ? airdateMatch[1].trim() : 'N/A';
+    let airdate = airdateMatch ? airdateMatch[1].trim() : 'N/A';
 
     const episodesMatch = html.match(/<span>Total Episodes:\s*<\/span>\s*(\d+)/);
-    const aliases = episodesMatch ? episodesMatch[1].trim() : 'N/A';
+    let aliases = episodesMatch ? episodesMatch[1].trim() : 'N/A';
 
     details.push({
-        description,
+        description: description,
         alias: "Episodes: " + aliases,
-        airdate
+        airdate: airdate
     });
 
     console.log("extractDetails:", details);
     return details[0]; // Return the first object for convenience
 }
 
-/**
- * Fetches the anime page, parses the HTML, and returns an array of
- * episodes in the format { href, number }.
- */
+/* ================================
+   3) EPISODES LOGIC
+   ================================ */
 async function getAnimeEpisodes(url) {
     try {
         const response = await fetch(url);
@@ -112,12 +111,12 @@ async function getAnimeEpisodes(url) {
 }
 
 /**
- * Regex-based parsing of the anime's episodes list.
+ * Regex-based parsing for the anime's episodes
  */
 function extractEpisodes(html) {
     const episodes = [];
     const episodeMatches = html.match(/<a href="([^"]+)"[^>]*class="btn-play"[^>]*>Episode (\d+)<\/a>/g);
-
+    
     if (episodeMatches) {
         episodeMatches.forEach(match => {
             const hrefMatch = match.match(/href="([^"]+)"/);
@@ -136,6 +135,9 @@ function extractEpisodes(html) {
     return episodes;
 }
 
+/* ================================
+   4) STREAM LOGIC
+   ================================ */
 /**
  * Extracts the streaming URL from the episode page HTML:
  * 1. Finds the <iframe src="...">
@@ -144,7 +146,7 @@ function extractEpisodes(html) {
  */
 async function extractStreamUrl(html) {
     const iframeMatch = html.match(/<iframe[^>]*src="([^"]+)"/);
-
+    
     if (iframeMatch) {
         const streamUrl = iframeMatch[1];
         console.log("Iframe URL:", streamUrl);
@@ -167,7 +169,9 @@ async function extractStreamUrl(html) {
     }
 }
 
-// Export all functions for use in your Sora module or other scripts
+/* ================================
+   5) EXPORTS
+   ================================ */
 export {
     searchAnime,
     getAnimeDetails,
