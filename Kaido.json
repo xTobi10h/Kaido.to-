@@ -1,16 +1,16 @@
 {
     "sourceName": "Kaido",
-    "iconUrl": "https://kaido.to/favicon.ico",
+    "iconUrl": "https://raw.githubusercontent.com/xTobi10h/Kaido-module/main/icon.png",
     "author": {
         "name": "xTobi10h",
-        "icon": "https://avatars.githubusercontent.com/u/168661157"
+        "icon": "https://avatars.githubusercontent.com/u/00000000"
     },
-    "version": "1.0.0",
+    "version": "1.0.1",
     "language": "English",
     "streamType": "HLS",
     "quality": "1080p",
     "baseUrl": "https://kaido.to",
-    "searchBaseUrl": "https://kaido.to/search?keyword=%s",
+    "searchBaseUrl": "https://kaido.to/search?q=%s",
     "scriptUrl": "https://raw.githubusercontent.com/xTobi10h/Kaido.to-/main/Kaido.js",
     "asyncJS": true
 }
