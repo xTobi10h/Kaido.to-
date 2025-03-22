@@ -11,6 +11,6 @@
     "quality": "1080p",
     "baseUrl": "https://megacloud.club/",
     "searchBaseUrl": "https://kaido.to/search?q=%s",
-    "scriptUrl": "https://raw.githubusercontent.com/xTobi10h/Kaido-module/main/kaido.js",
+    "scriptUrl": "https://raw.githubusercontent.com/xTobi10h/Kaido.to-/main/Kaido.js",
     "asyncJS": true
 }
