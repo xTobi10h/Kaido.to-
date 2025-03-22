@@ -1,32 +1,3 @@
-/**************************************
- * Kaido.to Sora Module (Regex-based) *
- **************************************/
-
-/* ================================
-   1) SEARCH LOGIC
-   ================================ */
-async function searchAnime(query) {
-    try {
-        const encoded = encodeURIComponent(query);
-        // Potential search endpoint
-        const url = `https://kaido.to/search?keyword=${encoded}`;
-
-        // Fetch the page
-        const response = await fetch(url);
-        const html = await response.text();
-
-        // Call your existing regex parser
-        const results = searchResults(html);
-        return results;
-    } catch (error) {
-        console.error("searchAnime error:", error);
-        return [];
-    }
-}
-
-/**
- * Regex-based parsing for search results HTML
- */
 function searchResults(html) {
     const results = [];
     const filmListRegex = /<div class="flw-item.*?">[\s\S]*?<\/div>\s*<\/div>/g;
@@ -36,7 +7,6 @@ function searchResults(html) {
         const titleMatch = itemHtml.match(/<a href="([^"]+)"[^>]*title="([^"]+)"/);
         const href = titleMatch ? `https://kaido.to${titleMatch[1]}` : '';
         const title = titleMatch ? titleMatch[2] : '';
-
         const imgMatch = itemHtml.match(/<img[^>]*data-src="([^"]+)"/);
         const imageUrl = imgMatch ? imgMatch[1] : '';
 
@@ -49,31 +19,10 @@ function searchResults(html) {
         }
     });
 
-    console.log("searchResults:", results);
+    console.log(results);
     return results;
 }
 
-/* ================================
-   2) DETAILS LOGIC
-   ================================ */
-async function getAnimeDetails(url) {
-    try {
-        const response = await fetch(url);
-        const html = await response.text();
-        return extractDetails(html);
-    } catch (error) {
-        console.error("getAnimeDetails error:", error);
-        return {
-            description: "Error",
-            alias: "Episodes: N/A",
-            airdate: "Unknown"
-        };
-    }
-}
-
-/**
- * Regex-based parsing for the anime detail page
- */
 function extractDetails(html) {
     const details = [];
 
@@ -92,29 +41,13 @@ function extractDetails(html) {
         airdate: airdate
     });
 
-    console.log("extractDetails:", details);
-    return details[0]; // Return the first object for convenience
+    console.log(details);
+    return details;
 }
 
-/* ================================
-   3) EPISODES LOGIC
-   ================================ */
-async function getAnimeEpisodes(url) {
-    try {
-        const response = await fetch(url);
-        const html = await response.text();
-        return extractEpisodes(html);
-    } catch (error) {
-        console.error("getAnimeEpisodes error:", error);
-        return [];
-    }
-}
-
-/**
- * Regex-based parsing for the anime's episodes
- */
 function extractEpisodes(html) {
     const episodes = [];
+    
     const episodeMatches = html.match(/<a href="([^"]+)"[^>]*class="btn-play"[^>]*>Episode (\d+)<\/a>/g);
     
     if (episodeMatches) {
@@ -131,33 +64,24 @@ function extractEpisodes(html) {
         });
     }
 
-    console.log("extractEpisodes:", episodes);
+    console.log(JSON.stringify(episodes));
     return episodes;
 }
 
-/* ================================
-   4) STREAM LOGIC
-   ================================ */
-/**
- * Extracts the streaming URL from the episode page HTML:
- * 1. Finds the <iframe src="...">
- * 2. Fetches that iframe
- * 3. Searches for file: '...m3u8'
- */
 async function extractStreamUrl(html) {
     const iframeMatch = html.match(/<iframe[^>]*src="([^"]+)"/);
     
     if (iframeMatch) {
         const streamUrl = iframeMatch[1];
-        console.log("Iframe URL:", streamUrl);
-
+        console.log(streamUrl);
         const response = await fetch(streamUrl);
         const newHtml = await response.text();
 
         const m3u8Match = newHtml.match(/file:\s*'([^']+\.m3u8)'/);
+
         if (m3u8Match) {
             const videoUrl = m3u8Match[1];
-            console.log("M3U8 URL:", videoUrl);
+            console.log(videoUrl);
             return videoUrl;
         } else {
             console.log("No m3u8 URL found.");
@@ -168,13 +92,3 @@ async function extractStreamUrl(html) {
         return null;
     }
 }
-
-/* ================================
-   5) EXPORTS
-   ================================ */
-export {
-    searchAnime,
-    getAnimeDetails,
-    getAnimeEpisodes,
-    extractStreamUrl
-};
