@@ -1,10 +1,11 @@
 async function searchResults(keyword) {
     try {
         const encodedKeyword = encodeURIComponent(keyword);
-        const response = await fetch(`https://kaido.to/search?q=${encodedKeyword}`);
+        const response = await fetch(`https://kaido.to/search?keyword=${encodedKeyword}`);
         const html = await response.text();
 
         let results = [];
+        // Adjust this regex as needed if the HTML structure differs
         const regex = /<div class="flw-item.*?">.*?<a href="(\/watch\/[^"]+)"[^>]*>(.*?)<\/a>.*?data-src="([^"]+)"/gs;
 
         let match;
@@ -39,7 +40,11 @@ async function extractDetails(url) {
         }]);
     } catch (error) {
         console.error("Details fetch error:", error);
-        return JSON.stringify([{ description: "Error loading description", aliases: "Duration: Unknown", airdate: "Aired: Unknown" }]);
+        return JSON.stringify([{
+            description: "Error loading description",
+            aliases: "Duration: Unknown",
+            airdate: "Aired: Unknown"
+        }]);
     }
 }
 
